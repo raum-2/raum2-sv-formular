@@ -531,7 +531,7 @@ function renderGutachten(c, step) {
         <p>Fotos aufnehmen oder auswählen</p>
         <span>JPG, PNG, HEIC bis je 20 MB</span>
       </div>
-      <input type="file" id="g-photo-input" accept="image/*" multiple capture="environment">
+      <input type="file" id="g-photo-input" accept="image/*" multiple>
       <div class="photo-grid" id="photo-grid"></div>
       <div class="photo-count" id="photo-count"></div>
       <div class="field" style="margin-top:16px"><label>Zusätzliche Beobachtungen</label>
@@ -605,7 +605,7 @@ function renderBegehung(c, step) {
       </div>
       <div class="field"><label>Fotos</label>
         <div class="photo-zone" id="b-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
-        <input type="file" id="b-photo-input" accept="image/*" multiple capture="environment">
+        <input type="file" id="b-photo-input" accept="image/*" multiple>
         <div class="photo-grid" id="photo-grid"></div>
         <div class="photo-count" id="photo-count"></div>
       </div>
@@ -687,7 +687,7 @@ function renderBautagebuch(c, step) {
       </div>
       <div class="field"><label>Fotos</label>
         <div class="photo-zone" id="bt-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
-        <input type="file" id="bt-photo-input" accept="image/*" multiple capture="environment">
+        <input type="file" id="bt-photo-input" accept="image/*" multiple>
         <div class="photo-grid" id="photo-grid"></div>
         <div class="photo-count" id="photo-count"></div>
       </div>
@@ -768,7 +768,7 @@ function renderAbnahme(c, step) {
       <div class="field"><label>Mangel 1: Beschreibung</label><textarea id="a-mangel1" placeholder="Beschreibung des Mangels" rows="3"></textarea></div>
       <div class="field"><label>Fotos</label>
         <div class="photo-zone" id="a-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
-        <input type="file" id="a-photo-input" accept="image/*" multiple capture="environment">
+        <input type="file" id="a-photo-input" accept="image/*" multiple>
         <div class="photo-grid" id="photo-grid"></div>
         <div class="photo-count" id="photo-count"></div>
       </div>
@@ -839,7 +839,7 @@ function renderMaengelruege(c, step) {
       <div class="field"><label>Bezug zur Leistung / Norm</label><input type="text" id="m-norm1" placeholder="z.B. Abweichung von ÖNORM B 2210, Abschnitt 5.3"></div>
       <div class="field"><label>Fotos</label>
         <div class="photo-zone" id="m-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
-        <input type="file" id="m-photo-input" accept="image/*" multiple capture="environment">
+        <input type="file" id="m-photo-input" accept="image/*" multiple>
         <div class="photo-grid" id="photo-grid"></div>
         <div class="photo-count" id="photo-count"></div>
       </div>
@@ -918,7 +918,7 @@ function renderBeweissicherung(c, step) {
       </div>
       <div class="field"><label>Fotos (möglichst umfangreich)</label>
         <div class="photo-zone" id="bs-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
-        <input type="file" id="bs-photo-input" accept="image/*" multiple capture="environment">
+        <input type="file" id="bs-photo-input" accept="image/*" multiple>
         <div class="photo-grid" id="photo-grid"></div>
         <div class="photo-count" id="photo-count"></div>
       </div>
@@ -974,14 +974,14 @@ function renderGewaehrleistung(c, step) {
         <div class="photo-zone" onclick="document.getElementById('gw-uebersicht-input').click()">
           <p>Übersichtsfoto aufnehmen</p><span>Tippen zum Fotografieren</span>
         </div>
-        <input type="file" id="gw-uebersicht-input" accept="image/*" capture="environment" onchange="handleOverviewPhoto(this)">
+        <input type="file" id="gw-uebersicht-input" accept="image/*" onchange="handleOverviewPhoto(this)">
         <div id="gw-uebersicht-preview"></div>
       </div>
       <div class="field"><label>Fotos der Prüfung</label>
         <div class="photo-zone" onclick="document.getElementById('gw-photo-input').click()">
           <p>Fotos aufnehmen</p><span>Tippen oder Dateien wählen</span>
         </div>
-        <input type="file" id="gw-photo-input" accept="image/*" capture="environment" multiple onchange="handlePhotos(this)">
+        <input type="file" id="gw-photo-input" accept="image/*" multiple onchange="handlePhotos(this)">
         <div class="photo-grid" id="gw-photo-grid"></div>
         <div class="photo-count">${photos.length} Foto(s)</div>
       </div>
