@@ -345,12 +345,36 @@ function goBack() {
   }
 }
 
+function saveCurrentStepValues() {
+  // Alle Input/Textarea/Select-Werte des aktuellen Steps in formData speichern
+  const page = document.getElementById('page-' + currentForm);
+  if (!page) return;
+  page.querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.id && el.value) formData[el.id] = el.value;
+  });
+  // Mängel-Werte sichern
+  if (typeof saveMaengelValues === 'function') saveMaengelValues();
+  if (typeof saveBeobachtungValues === 'function') saveBeobachtungValues();
+}
+
+function restoreStepValues() {
+  // Gespeicherte Werte wiederherstellen
+  setTimeout(() => {
+    Object.keys(formData).forEach(id => {
+      const el = document.getElementById(id);
+      if (el && id !== 'typ') el.value = formData[id];
+    });
+  }, 50);
+}
+
 function nextStep() {
   const form = FORMS[currentForm];
+  saveCurrentStepValues();
   if (currentStep < form.totalSteps - 1) {
     currentStep++;
     renderSteps();
     renderFormContent();
+    restoreStepValues();
     window.scrollTo({top: 0, behavior: 'smooth'});
   } else {
     submitForm();
@@ -359,9 +383,11 @@ function nextStep() {
 
 function prevStep() {
   if (currentStep > 0) {
+    saveCurrentStepValues();
     currentStep--;
     renderSteps();
     renderFormContent();
+    restoreStepValues();
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
 }
@@ -638,9 +664,12 @@ function renderGutachten(c, step) {
         <div class="summary-row"><span class="lbl">Auftraggeber</span><span class="val">${v('g-auftraggeber')}</span></div>
       </div>
       <div class="summary-card"><h4>Gutachten</h4>
-        <div class="summary-row"><span class="lbl">Art</span><span class="val">${getChipValues('g-art-chips').join(', ') || '—'}</span></div>
-        <div class="summary-row"><span class="lbl">Fotos</span><span class="val">${photos.length}</span></div>
-      </div>`;
+        <div class="summary-row"><span class="lbl">Anlass</span><span class="val">${v('g-anlass')}</span></div>
+        <div class="summary-row"><span class="lbl">Feststellungen</span><span class="val">${maengelList.filter(m=>m.raum||m.beschreibung).length}</span></div>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val" style="color:var(--red)">${photos.length}</span></div>
+      </div>
+      ${maengelList.filter(m=>m.raum||m.beschreibung).length > 0 ? '<div class="summary-card"><h4>Feststellungen</h4>' + maengelList.filter(m=>m.raum||m.beschreibung).map((m,i) => '<div class="summary-row"><span class="lbl">' + (i+1) + '. ' + (m.raum||'–') + '</span><span class="val" style="font-size:12px;max-width:60%;text-align:right">' + (m.beschreibung||'–').substring(0,60) + '</span></div>').join('') + '</div>' : ''}
+      ${photos.length > 0 ? '<div class="summary-card"><h4>Fotos</h4><div class="photo-grid" style="margin-top:8px">' + photos.map((p,i) => '<div class="photo-card"><img src="' + p.data + '"><span class="idx">' + (i+1) + '</span></div>').join('') + '</div></div>' : ''}`;
   }
 }
 
@@ -1107,7 +1136,9 @@ function renderGewaehrleistung(c, step) {
 // ============================================================
 function v(id) {
   const el = document.getElementById(id);
-  return el ? (el.value || '—') : '—';
+  if (el && el.value) return el.value;
+  if (formData[id]) return formData[id];
+  return '—';
 }
 
 // ============================================================
@@ -1120,44 +1151,103 @@ async function submitForm() {
   loading.classList.add('active');
   loadingText.textContent = FORMS[currentForm].title + ' wird erstellt...';
 
-  const steps = ['Fotos werden analysiert...','Normen werden durchsucht...','Text wird generiert...','Word-Datei wird erstellt...'];
+  const steps = ['Daten werden gesendet...','Fotos werden analysiert...','Text wird generiert...','Word-Datei wird erstellt...','In OneDrive ablegen...'];
   let si = 0;
-  const iv = setInterval(() => { si = Math.min(si+1, steps.length-1); loadingStep.textContent = steps[si]; }, 3000);
+  const iv = setInterval(() => { si = Math.min(si+1, steps.length-1); loadingStep.textContent = steps[si]; }, 5000);
 
-  // Mängel-Werte sichern bevor wir senden
+  // Mängel-Werte sichern
+  saveCurrentStepValues();
   saveMaengelValues();
 
-  // Mapping von internem Formnamen auf Gutachtentyp-Kürzel
   const typKuerzel = {
     gutachten: 'GA', begehung: 'BG', bautagebuch: 'BT',
     abnahme: 'AP', maengelruege: 'MR', beweissicherung: 'BS', gewaehrleistung: 'GW'
   };
 
+  // Fotos als Base64 Data-URLs für Mängel-Zuordnung
+  const fotoMaengel = {};
+  maengelList.forEach((m, mIdx) => {
+    photos.forEach((p, pIdx) => {
+      const key = 'foto_' + (mIdx+1) + '_' + (pIdx+1);
+      fotoMaengel[key] = p.data;
+    });
+  });
+
   const payload = {
     typ: currentForm,
     gutachtentyp: typKuerzel[currentForm] || 'GA',
     titel: FORMS[currentForm].title,
-    fotos: photos.map(p => ({base64: p.base64, notiz: p.note, dateiname: p.name})),
-    maengel: maengelList.filter(m => m.raum || m.beschreibung),
+    datum: new Date().toISOString().split('T')[0],
+    // Alle gespeicherten Formular-Werte
+    ...formData,
+    // Mängel als Array
+    maengel: maengelList.filter(m => m.raum || m.beschreibung).map((m, i) => ({
+      raum: m.raum,
+      beschreibung: m.beschreibung,
+      stichworte: m.stichworte,
+      fotos: photos.filter((p, pi) => pi < 4).map(p => p.data)
+    })),
+    // Flaches Format für Node 02 Kompatibilität
+    auftraggeber: formData['g-auftraggeber'] || formData['b-tn1'] || formData['gw-auftraggeber'] || '',
+    objekt_adresse: formData['g-adresse'] || formData['b-adresse'] || formData['gw-adresse'] || formData['m-objekt'] || formData['bs-adresse'] || '',
+    objekt_bezeichnung: formData['b-projekt'] || formData['gw-projektname'] || formData['m-projekt'] || formData['bt-projekt'] || '',
+    begehungsdatum: formData['b-datum'] || formData['gw-begehungsdatum'] || formData['a-datum'] || new Date().toISOString().split('T')[0],
+    anmerkungen: formData['g-notizen'] || formData['b-notizen'] || '',
+    wetter: formData['b-wetter'] || formData['bt-wetter'] || '',
+    temperatur: formData['b-temp'] || '',
   };
 
-  // Collect all form inputs
+  // Aktuelle Seite Inputs auch noch sammeln
   document.querySelectorAll('#page-' + currentForm + ' input, #page-' + currentForm + ' textarea, #page-' + currentForm + ' select').forEach(el => {
-    if (el.id && el.value) payload[el.id] = el.value;
+    if (el.id && el.value && !payload[el.id]) payload[el.id] = el.value;
   });
 
   try {
     const res = await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    const result = await res.json();
     clearInterval(iv);
     loading.classList.remove('active');
-    alert('Dokument wird erstellt und im Ausgabeordner abgelegt.');
-    goHome();
+
+    let resultMsg = '';
+    try {
+      const result = await res.json();
+      resultMsg = result.message || '';
+    } catch(e) {}
+
+    // Erfolgs-Screen anzeigen
+    showSuccessScreen(typKuerzel[currentForm] || 'GA');
   } catch(e) {
     clearInterval(iv);
     loading.classList.remove('active');
-    alert('Verbindungsfehler: ' + e.message + '\n\nPrüfen Sie die Webhook-URL.');
+    alert('Verbindungsfehler: ' + e.message + '\n\nBitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.');
   }
+}
+
+function showSuccessScreen(typCode) {
+  const container = document.getElementById(currentForm + '-content');
+  if (!container) { goHome(); return; }
+
+  document.getElementById('bottom').style.display = 'none';
+
+  container.innerHTML = `
+    <div style="text-align:center;padding:40px 20px">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Dokument wird erstellt</h2>
+      <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px">
+        Ihr ${FORMS[currentForm]?.title || 'Dokument'} wird automatisch generiert und in OneDrive im Ordner <strong>"Gutachten"</strong> abgelegt.
+      </p>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Speicherort</div>
+        <div style="font-size:14px;margin-bottom:4px">📁 OneDrive → <strong>Gutachten</strong></div>
+        <div style="font-size:12px;color:var(--hint)">Datei: ${typCode}-${new Date().getFullYear()}-XXXX_${FORMS[currentForm]?.title?.replace(/\s/g,'_') || 'Dokument'}.docx</div>
+      </div>
+      <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:12px;font-size:13px;color:var(--blue);margin-bottom:24px">
+        ⏱️ Die Erstellung dauert ca. 1-3 Minuten. Sie erhalten die Datei in Ihrem OneDrive.
+      </div>
+      <button onclick="goHome()" class="btn btn-primary" style="background:var(--green);width:100%">Neues Dokument erstellen</button>
+      <button onclick="window.open('https://onedrive.live.com','_blank')" class="btn btn-secondary" style="width:100%;margin-top:8px">OneDrive öffnen</button>
+    </div>`;
 }
 
 function goHome() {
