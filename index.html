@@ -438,6 +438,90 @@ function removePhoto(i) {
 }
 
 // ============================================================
+// MÄNGEL / FESTSTELLUNGEN SYSTEM
+// ============================================================
+let maengelList = [{ raum: '', beschreibung: '', stichworte: '' }];
+
+function addMangel() {
+  maengelList.push({ raum: '', beschreibung: '', stichworte: '' });
+  renderMaengelList();
+}
+
+function removeMangel(i) {
+  if (maengelList.length <= 1) return;
+  maengelList.splice(i, 1);
+  renderMaengelList();
+}
+
+function saveMaengelValues() {
+  document.querySelectorAll('.mangel-card').forEach((card, i) => {
+    if (maengelList[i]) {
+      const inputs = card.querySelectorAll('input, textarea');
+      if (inputs[0]) maengelList[i].raum = inputs[0].value;
+      if (inputs[1]) maengelList[i].beschreibung = inputs[1].value;
+      if (inputs[2]) maengelList[i].stichworte = inputs[2].value;
+    }
+  });
+}
+
+function renderMaengelList() {
+  const container = document.getElementById('maengel-container');
+  if (!container) return;
+  saveMaengelValues();
+  container.innerHTML = maengelList.map((m, i) => `
+    <div class="mangel-card" style="border-left-color:${FORMS[currentForm]?.color || 'var(--purple)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--muted)">FESTSTELLUNG ${i+1}</span>
+        ${maengelList.length > 1 ? `<button onclick="removeMangel(${i})" style="background:none;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:4px 8px">Entfernen</button>` : ''}
+      </div>
+      <div class="field"><label>Raum / Bereich</label><input type="text" placeholder="z.B. Badezimmer EG" value="${m.raum}"></div>
+      <div class="field"><label>Beschreibung</label><textarea placeholder="Was wurde festgestellt?" rows="2">${m.beschreibung}</textarea></div>
+      <div class="field"><label>Stichworte (für KI-Analyse)</label><input type="text" placeholder="z.B. Riss, Feuchtigkeit, Schimmel" value="${m.stichworte}"></div>
+    </div>
+  `).join('');
+}
+
+// Beobachtungen für Begehungsprotokoll
+let beobachtungen = [{ bereich: '', text: '' }];
+
+function addBeobachtung() {
+  beobachtungen.push({ bereich: '', text: '' });
+  renderBeobachtungen();
+}
+
+function removeBeobachtung(i) {
+  if (beobachtungen.length <= 1) return;
+  beobachtungen.splice(i, 1);
+  renderBeobachtungen();
+}
+
+function saveBeobachtungValues() {
+  document.querySelectorAll('.area-card').forEach((card, i) => {
+    if (beobachtungen[i]) {
+      const inputs = card.querySelectorAll('input, textarea');
+      if (inputs[0]) beobachtungen[i].bereich = inputs[0].value;
+      if (inputs[1]) beobachtungen[i].text = inputs[1].value;
+    }
+  });
+}
+
+function renderBeobachtungen() {
+  const container = document.getElementById('beobachtungen-container');
+  if (!container) return;
+  saveBeobachtungValues();
+  container.innerHTML = beobachtungen.map((b, i) => `
+    <div class="area-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--muted)">BEOBACHTUNG ${i+1}</span>
+        ${beobachtungen.length > 1 ? `<button onclick="removeBeobachtung(${i})" style="background:none;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:4px 8px">Entfernen</button>` : ''}
+      </div>
+      <div class="field"><label>Bereich / Bauteil</label><input type="text" placeholder="z.B. Dachgeschoss, Fassade Nord" value="${b.bereich}"></div>
+      <div class="field"><label>Feststellung</label><textarea placeholder="Was wurde beobachtet?" rows="2">${b.text}</textarea></div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
 // CHIP SELECTION
 // ============================================================
 function setupChips(containerId, multi = false) {
@@ -525,8 +609,12 @@ function renderGutachten(c, step) {
     });
   } else if (step === 2) {
     c.innerHTML = `
-      <h2 class="sec-title">Fotos</h2>
-      <p class="sec-sub">Baustellenfotos hochladen. Tippen Sie auf ein Foto für eine Notiz.</p>
+      <h2 class="sec-title">Mängel + Fotos</h2>
+      <p class="sec-sub">Feststellungen erfassen und Fotos hochladen.</p>
+      <div id="maengel-container"></div>
+      <div class="add-btn" onclick="addMangel()">+ Weitere Feststellung hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:12px">Fotos</h3>
       <div class="photo-zone" id="g-upload-zone">
         <p>Fotos aufnehmen oder auswählen</p>
         <span>JPG, PNG, HEIC bis je 20 MB</span>
@@ -537,6 +625,7 @@ function renderGutachten(c, step) {
       <div class="field" style="margin-top:16px"><label>Zusätzliche Beobachtungen</label>
         <textarea id="g-notizen" placeholder="Beobachtungen, die nicht auf den Fotos sichtbar sind..." rows="3"></textarea>
       </div>`;
+    renderMaengelList();
     setupPhotoUpload('g-upload-zone', 'g-photo-input');
     renderPhotos();
   } else {
@@ -596,27 +685,23 @@ function renderBegehung(c, step) {
     c.innerHTML = `
       <h2 class="sec-title">Beobachtungen + Fotos</h2>
       <p class="sec-sub">Dokumentation pro Bereich. Fotos und Notizen.</p>
-      <div class="field"><label>Bereich / Bauteil</label>
-        <div class="chips" id="b-bereich"><div class="chip">Außenbereich</div><div class="chip">Keller</div><div class="chip">Erdgeschoß</div><div class="chip">Obergeschoß</div><div class="chip">Dach</div><div class="chip">Haustechnik</div></div>
-      </div>
-      <div class="field"><label>Beobachtung / Feststellung</label><textarea id="b-beob" placeholder="Was wurde festgestellt?" rows="3"></textarea></div>
-      <div class="field"><label>Bewertung</label>
-        <div class="chips" id="b-bewertung"><div class="chip" style="border-color:var(--green);color:var(--green)">In Ordnung</div><div class="chip" style="border-color:var(--amber);color:var(--amber)">Mangel</div><div class="chip" style="border-color:var(--danger);color:var(--danger)">Gefahr</div></div>
-      </div>
-      <div class="field"><label>Fotos</label>
+      <div id="beobachtungen-container"></div>
+      <div class="add-btn" onclick="addBeobachtung()">+ Weitere Beobachtung hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:12px">Fotos</h3>
+      <div class="field">
         <div class="photo-zone" id="b-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
         <input type="file" id="b-photo-input" accept="image/*" multiple>
         <div class="photo-grid" id="photo-grid"></div>
         <div class="photo-count" id="photo-count"></div>
       </div>
-      <div class="add-btn">+ Weitere Beobachtung hinzufügen</div>
       <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
       <div class="field"><label>Maßnahmen / Aufgaben</label><textarea id="b-massnahmen" placeholder="Was ist zu tun?" rows="2"></textarea></div>
       <div class="row">
         <div class="field"><label>Verantwortlich</label><input type="text" id="b-verantwortlich" placeholder="Name / Firma"></div>
         <div class="field"><label>Frist</label><input type="date" id="b-frist"></div>
       </div>`;
-    setupChips('b-bereich', true); setupChips('b-bewertung');
+    renderBeobachtungen();
     setupPhotoUpload('b-upload-zone', 'b-photo-input');
     renderPhotos();
   } else {
@@ -776,9 +861,11 @@ function renderAbnahme(c, step) {
         <div class="field"><label>Frist zur Behebung</label><input type="date" id="a-frist"></div>
         <div class="field"><label>Verantwortlich</label><input type="text" id="a-verantwortlich" placeholder="Firma / Name"></div>
       </div>
-      <div class="add-btn">+ Weiteren Mangel hinzufügen</div>
+      <div id="maengel-container"></div>
+      <div class="add-btn" onclick="addMangel()">+ Weiteren Mangel hinzufügen</div>
       <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
       <div class="field"><label>Allgemeine Vorbehalte</label><textarea id="a-vorbehalte" placeholder="Sonstige Vorbehalte oder Vereinbarungen (optional)" rows="2"></textarea></div>`;
+    renderMaengelList();
     setupPhotoUpload('a-upload-zone', 'a-photo-input');
     renderPhotos();
   } else {
@@ -835,8 +922,9 @@ function renderMaengelruege(c, step) {
     c.innerHTML = `
       <h2 class="sec-title">Mängel dokumentieren</h2>
       <p class="sec-sub">Jeden Mangel einzeln beschreiben und mit Fotos belegen.</p>
-      <div class="field"><label>Mangel 1: Beschreibung</label><textarea id="m-mangel1" placeholder="Detaillierte Beschreibung des Mangels, Lage, Ausmaß" rows="3"></textarea></div>
-      <div class="field"><label>Bezug zur Leistung / Norm</label><input type="text" id="m-norm1" placeholder="z.B. Abweichung von ÖNORM B 2210, Abschnitt 5.3"></div>
+      <div id="maengel-container"></div>
+      <div class="add-btn" onclick="addMangel()">+ Weiteren Mangel hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
       <div class="field"><label>Fotos</label>
         <div class="photo-zone" id="m-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
         <input type="file" id="m-photo-input" accept="image/*" multiple>
@@ -844,7 +932,6 @@ function renderMaengelruege(c, step) {
         <div class="photo-count" id="photo-count"></div>
       </div>
       <div class="field"><label>Festgestellt am</label><input type="date" id="m-festgestellt"></div>
-      <div class="add-btn">+ Weiteren Mangel hinzufügen</div>
       <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
       <div class="field"><label>Frist zur Mängelbehebung</label>
         <div class="chips" id="m-frist"><div class="chip">14 Tage</div><div class="chip">21 Tage</div><div class="chip">30 Tage</div><div class="chip">Individuell</div></div>
@@ -852,6 +939,7 @@ function renderMaengelruege(c, step) {
       <div class="field"><label>Bei Nicht-Behebung</label>
         <div class="chips" id="m-konsequenz"><div class="chip">Ersatzvornahme</div><div class="chip">Preisminderung</div><div class="chip">Rücktritt</div></div>
       </div>`;
+    renderMaengelList();
     setupChips('m-frist'); setupChips('m-konsequenz');
     setupPhotoUpload('m-upload-zone', 'm-photo-input');
     renderPhotos();
@@ -906,7 +994,7 @@ function renderBeweissicherung(c, step) {
           <div class="chip">Außenanlagen</div><div class="chip">Garage</div>
         </div>
       </div>
-      <div class="add-btn">+ Eigenen Bereich hinzufügen</div>`;
+      <div class="add-btn" onclick="addBeobachtung()">+ Eigenen Bereich hinzufügen</div>`;
     setupChips('bs-bereiche', true);
   } else if (step === 2) {
     c.innerHTML = `
@@ -1036,6 +1124,9 @@ async function submitForm() {
   let si = 0;
   const iv = setInterval(() => { si = Math.min(si+1, steps.length-1); loadingStep.textContent = steps[si]; }, 3000);
 
+  // Mängel-Werte sichern bevor wir senden
+  saveMaengelValues();
+
   // Mapping von internem Formnamen auf Gutachtentyp-Kürzel
   const typKuerzel = {
     gutachten: 'GA', begehung: 'BG', bautagebuch: 'BT',
@@ -1046,7 +1137,8 @@ async function submitForm() {
     typ: currentForm,
     gutachtentyp: typKuerzel[currentForm] || 'GA',
     titel: FORMS[currentForm].title,
-    fotos: photos.map(p => ({base64: p.base64, notiz: p.note, dateiname: p.name}))
+    fotos: photos.map(p => ({base64: p.base64, notiz: p.note, dateiname: p.name})),
+    maengel: maengelList.filter(m => m.raum || m.beschreibung),
   };
 
   // Collect all form inputs
@@ -1074,6 +1166,8 @@ function goHome() {
   photos = [];
   crews = [];
   checks = [];
+  maengelList = [{ raum: '', beschreibung: '', stichworte: '' }];
+  beobachtungen = [{ bereich: '', text: '' }];
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   document.getElementById('back-btn').style.display = 'none';
