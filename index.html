@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<title>Raum² SV</title>
+<link rel="manifest" href="manifest.json">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root{--bg:#0f172a;--card:#1e293b;--input:#0f172a;--border:#334155;--focus:#3b82f6;--text:#f1f5f9;--muted:#94a3b8;--hint:#64748b;--red:#E30613;--blue:#3b82f6;--amber:#f59e0b;--green:#22c55e;--purple:#8b5cf6;--teal:#14b8a6;--danger:#ef4444;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
+.header{position:sticky;top:0;z-index:100;background:rgba(15,23,42,0.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 20px}
+.header-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-hex{width:24px;height:24px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center}
+.logo-hex span{color:#fff;font-weight:800;font-size:12px}
+.logo-text{font-size:16px;font-weight:700;letter-spacing:-0.02em}
+.logo-text sup{font-size:10px}
+.back-btn{font-size:14px;cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted)}
+.back-btn:hover{color:var(--text);border-color:var(--muted)}
+.badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:16px;text-transform:uppercase;letter-spacing:0.04em}
+.main{max-width:600px;margin:0 auto;padding:20px;padding-bottom:100px}
+.page{display:none}.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.steps{display:flex;gap:4px;margin-bottom:24px}.step-bar{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .3s}.step-bar.on{background:var(--blue)}.step-bar.done{background:var(--green)}
+.sec-title{font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+.sec-sub{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+.field input,.field select,.field textarea{width:100%;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-family:inherit;font-size:16px;padding:12px 14px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(59,130,246,0.12)}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:9px 16px;border-radius:32px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text);transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--muted)}
+.chip.on{color:#fff}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:var(--r);border:1.5px dashed var(--border);color:var(--hint);font-size:14px;cursor:pointer;margin-top:8px;transition:all .15s}
+.add-btn:hover{border-color:var(--focus);color:var(--focus)}
+.photo-zone{border:2px dashed var(--border);border-radius:var(--r);padding:24px 16px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(59,130,246,0.03)}
+.photo-zone:hover{border-color:var(--focus);background:rgba(59,130,246,0.06)}
+.photo-zone p{font-size:15px;font-weight:500;margin-bottom:2px}
+.photo-zone span{font-size:13px;color:var(--muted)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.photo-card{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--card);border:1px solid var(--border)}
+.photo-card img{width:100%;height:100%;object-fit:cover}
+.photo-card .rm{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.7);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-card .idx{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px}
+.photo-card .note{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);border:none;color:#fff;font-family:inherit;font-size:11px;padding:5px 7px;outline:none}
+.photo-card .note::placeholder{color:rgba(255,255,255,.4)}
+.photo-count{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+input[type=file]{display:none}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:14px 20px;padding-bottom:max(14px,env(safe-area-inset-bottom));z-index:100}
+.bottom-inner{max-width:600px;margin:0 auto;display:flex;gap:10px}
+.btn{flex:1;padding:14px 20px;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .15s;text-align:center}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#2563eb}
+.btn-primary:active{transform:scale(0.98)}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-success{background:var(--green);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.doc-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 16px;cursor:pointer;transition:all .15s}
+.doc-card:hover{border-color:var(--focus)}
+.doc-card .ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.doc-card .ic svg{width:20px;height:20px}
+.doc-card h3{font-size:14px;font-weight:600;margin-bottom:3px}
+.doc-card p{font-size:12px;color:var(--hint);line-height:1.4}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.summary-card h4{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
+.summary-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px}
+.summary-row .lbl{color:var(--muted)}
+.summary-row .val{font-weight:600}
+.crew-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border-radius:10px;margin-bottom:6px}
+.crew-row span{font-size:14px}
+.crew-cnt{display:flex;align-items:center;gap:10px}
+.crew-cnt .n{font-size:16px;font-weight:600;min-width:24px;text-align:center}
+.cnt-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cnt-btn:hover{border-color:var(--focus);color:var(--focus)}
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border-radius:10px;margin-bottom:6px;cursor:pointer}
+.check-box{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;transition:all .15s}
+.check-item.ok .check-box{background:var(--green);border-color:var(--green)}
+.check-item.fail .check-box{background:var(--danger);border-color:var(--danger)}
+.check-text{font-size:14px;flex:1}
+.check-badge{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500}
+.cb-ok{background:rgba(34,197,94,0.15);color:#4ade80}
+.cb-fail{background:rgba(239,68,68,0.15);color:#f87171}
+.cb-open{background:rgba(148,163,184,0.15);color:#94a3b8}
+.decision{padding:16px;border-radius:var(--r);margin-bottom:8px;cursor:pointer;border:1.5px solid var(--border);display:flex;align-items:center;gap:12px;transition:all .15s}
+.decision:hover{border-color:var(--muted)}
+.decision.sel{border-color:var(--green);background:rgba(34,197,94,0.06)}
+.decision .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .15s}
+.decision.sel .dot{border-color:var(--green);background:var(--green)}
+.dec-t{font-size:15px;font-weight:500}
+.dec-s{font-size:12px;color:var(--hint)}
+.hint-box{border-radius:var(--r);padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:16px}
+.mangel-card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:8px;border-left:3px solid var(--purple)}
+.area-card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:8px;border-left:3px solid var(--teal)}
+.area-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.area-name{font-size:14px;font-weight:500}
+.area-count{font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(20,184,166,0.15);color:#5eead4}
+.area-desc{font-size:12px;color:var(--muted)}
+.loading{display:none;position:fixed;inset:0;background:rgba(15,23,42,.95);z-index:200;justify-content:center;align-items:center;flex-direction:column;gap:20px}
+.loading.active{display:flex}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:16px;font-weight:500;text-align:center}
+.loading-step{font-size:13px;color:var(--muted)}
+.footer{text-align:center;padding:20px;font-size:11px;color:var(--hint)}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HEADER -->
+<!-- ============================================================ -->
+<div class="header">
+  <div class="header-inner">
+    <div class="logo" id="header-logo">
+      <div class="logo-hex" id="logo-hex" style="background:var(--red)"><span>R</span></div>
+      <div class="logo-text">Raum<sup>2</sup> SV</div>
+    </div>
+    <button class="back-btn" id="back-btn" style="display:none" onclick="goBack()">← Zurück</button>
+    <div class="badge" id="header-badge" style="background:var(--red);color:#fff">v2.0</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MAIN CONTENT -->
+<!-- ============================================================ -->
+<div class="main" id="main">
+
+  <!-- ======== HOME ======== -->
+  <div class="page active" id="page-home">
+    <h2 class="sec-title">Neues Dokument</h2>
+    <p class="sec-sub">Dokumenttyp auswählen, dann Daten und Fotos erfassen.</p>
+    <div class="cards">
+      <div class="doc-card" onclick="openForm('gutachten')">
+        <div class="ic" style="background:rgba(227,6,19,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#E30613" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <h3>Gutachten</h3>
+        <p>Schadensgutachten, Kaufberatung, Zustandsbewertung</p>
+      </div>
+      <div class="doc-card" onclick="openForm('begehung')">
+        <div class="ic" style="background:rgba(59,130,246,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg></div>
+        <h3>Begehungsprotokoll</h3>
+        <p>Baustellenbegehung, Zustandsdokumentation</p>
+      </div>
+      <div class="doc-card" onclick="openForm('bautagebuch')">
+        <div class="ic" style="background:rgba(245,158,11,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+        <h3>Bautagebuch</h3>
+        <p>Tägliche Baudokumentation</p>
+      </div>
+      <div class="doc-card" onclick="openForm('abnahme')">
+        <div class="ic" style="background:rgba(34,197,94,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <h3>Abnahmeprotokoll</h3>
+        <p>Übergabe, Schlussabnahme</p>
+      </div>
+      <div class="doc-card" onclick="openForm('maengelruege')">
+        <div class="ic" style="background:rgba(139,92,246,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+        <h3>Mängelrüge</h3>
+        <p>Formelles Mängelschreiben</p>
+      </div>
+      <div class="doc-card" onclick="openForm('beweissicherung')">
+        <div class="ic" style="background:rgba(20,184,166,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="2"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+        <h3>Beweissicherung</h3>
+        <p>Dokumentation vor/während Bauarbeiten</p>
+      </div>
+      <div class="doc-card" onclick="openForm('gewaehrleistung')">
+        <div class="ic" style="background:rgba(249,115,22,0.12)"><svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+        <h3>GW-Abnahme</h3>
+        <p>Gewährleistungsabnahme nach Ablauf</p>
+      </div>
+    </div>
+    <div class="footer">Raum² Baumanagement GmbH | Bahnhofstraße 46, 8501 Lieboch</div>
+  </div>
+
+  <!-- ======== GUTACHTEN FORM ======== -->
+  <div class="page" id="page-gutachten">
+    <div class="steps" id="steps-gutachten"></div>
+    <div id="gutachten-content"></div>
+  </div>
+
+  <!-- ======== BEGEHUNG FORM ======== -->
+  <div class="page" id="page-begehung">
+    <div class="steps" id="steps-begehung"></div>
+    <div id="begehung-content"></div>
+  </div>
+
+  <!-- ======== BAUTAGEBUCH FORM ======== -->
+  <div class="page" id="page-bautagebuch">
+    <div class="steps" id="steps-bautagebuch"></div>
+    <div id="bautagebuch-content"></div>
+  </div>
+
+  <!-- ======== ABNAHME FORM ======== -->
+  <div class="page" id="page-abnahme">
+    <div class="steps" id="steps-abnahme"></div>
+    <div id="abnahme-content"></div>
+  </div>
+
+  <!-- ======== MÄNGELRÜGE FORM ======== -->
+  <div class="page" id="page-maengelruege">
+    <div class="steps" id="steps-maengelruege"></div>
+    <div id="maengelruege-content"></div>
+  </div>
+
+  <!-- ======== BEWEISSICHERUNG FORM ======== -->
+  <div class="page" id="page-beweissicherung">
+    <div class="steps" id="steps-beweissicherung"></div>
+    <div id="beweissicherung-content"></div>
+  </div>
+
+  <!-- ======== GEWÄHRLEISTUNGSABNAHME FORM ======== -->
+  <div class="page" id="page-gewaehrleistung">
+    <div class="steps" id="steps-gewaehrleistung"></div>
+    <div id="gewaehrleistung-content"></div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- BOTTOM NAV -->
+<!-- ============================================================ -->
+<div class="bottom" id="bottom" style="display:none">
+  <div class="bottom-inner">
+    <button class="btn btn-secondary" id="btn-back" onclick="prevStep()">Zurück</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextStep()">Weiter</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- LOADING -->
+<!-- ============================================================ -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Dokument wird erstellt...</div>
+  <div class="loading-step" id="loading-step">Fotos werden analysiert</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================ -->
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const WEBHOOK_URL = localStorage.getItem('raum2_webhook_url') || 'https://raum20.app.n8n.cloud/webhook/gutachten-webhook';
+
+// ============================================================
+// STATE
+// ============================================================
+let currentForm = null;
+let currentStep = 0;
+let photos = [];
+let formData = {};
+
+// ============================================================
+// FORM DEFINITIONS
+// ============================================================
+const FORMS = {
+  gutachten: {
+    title: 'Gutachten',
+    color: '#E30613',
+    steps: ['Objektdaten', 'Gutachtenart', 'Fotos', 'Zusammenfassung'],
+    totalSteps: 4
+  },
+  begehung: {
+    title: 'Begehungsprotokoll',
+    color: '#3b82f6',
+    steps: ['Projektdaten', 'Teilnehmer', 'Beobachtungen + Fotos', 'Zusammenfassung'],
+    totalSteps: 4
+  },
+  bautagebuch: {
+    title: 'Bautagebuch',
+    color: '#f59e0b',
+    steps: ['Projekt + Wetter', 'Arbeitskräfte', 'Leistungen + Fotos', 'Zusammenfassung'],
+    totalSteps: 4
+  },
+  abnahme: {
+    title: 'Abnahmeprotokoll',
+    color: '#22c55e',
+    steps: ['Abnahmedaten', 'Prüfpunkte', 'Mängel + Vorbehalte', 'Entscheidung'],
+    totalSteps: 4
+  },
+  maengelruege: {
+    title: 'Mängelrüge',
+    color: '#8b5cf6',
+    steps: ['Empfänger + Bezug', 'Mängel dokumentieren', 'Zusammenfassung'],
+    totalSteps: 3
+  },
+  beweissicherung: {
+    title: 'Beweissicherung',
+    color: '#14b8a6',
+    steps: ['Anlass + Objekt', 'Bereiche', 'Zustand + Fotos', 'Zusammenfassung'],
+    totalSteps: 4
+  },
+  gewaehrleistung: {
+    title: 'Gewährleistungsabnahme',
+    color: '#f97316',
+    steps: ['GW-Daten', 'Prüfung + Fotos', 'Mängel', 'Zusammenfassung'],
+    totalSteps: 4
+  }
+};
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function openForm(type) {
+  currentForm = type;
+  currentStep = 0;
+  photos = [];
+  formData = { typ: type };
+
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-' + type).classList.add('active');
+  document.getElementById('back-btn').style.display = '';
+  document.getElementById('header-badge').textContent = FORMS[type].title;
+  document.getElementById('header-badge').style.background = FORMS[type].color;
+  document.getElementById('logo-hex').style.background = FORMS[type].color;
+  document.getElementById('bottom').style.display = '';
+
+  renderSteps();
+  renderFormContent();
+  window.scrollTo({top: 0});
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    prevStep();
+  } else {
+    currentForm = null;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-home').classList.add('active');
+    document.getElementById('back-btn').style.display = 'none';
+    document.getElementById('header-badge').textContent = 'v2.0';
+    document.getElementById('header-badge').style.background = 'var(--red)';
+    document.getElementById('logo-hex').style.background = 'var(--red)';
+    document.getElementById('bottom').style.display = 'none';
+  }
+}
+
+function nextStep() {
+  const form = FORMS[currentForm];
+  if (currentStep < form.totalSteps - 1) {
+    currentStep++;
+    renderSteps();
+    renderFormContent();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  } else {
+    submitForm();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderSteps();
+    renderFormContent();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+function renderSteps() {
+  const form = FORMS[currentForm];
+  const container = document.getElementById('steps-' + currentForm);
+  container.innerHTML = '';
+  for (let i = 0; i < form.totalSteps; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'step-bar' + (i < currentStep ? ' done' : i === currentStep ? ' on' : '');
+    bar.style.setProperty('--focus', form.color);
+    if (i === currentStep) bar.style.background = form.color;
+    if (i < currentStep) bar.style.background = 'var(--green)';
+    container.appendChild(bar);
+  }
+
+  const btnNext = document.getElementById('btn-next');
+  const btnBack = document.getElementById('btn-back');
+  btnBack.style.display = currentStep > 0 ? '' : 'none';
+  if (currentStep === form.totalSteps - 1) {
+    btnNext.textContent = form.title + ' erstellen';
+    btnNext.className = 'btn btn-success';
+  } else {
+    btnNext.textContent = 'Weiter';
+    btnNext.className = 'btn btn-primary';
+    btnNext.style.background = form.color;
+  }
+}
+
+// ============================================================
+// PHOTO HANDLING
+// ============================================================
+function setupPhotoUpload(zoneId, inputId) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  if (!zone || !input) return;
+
+  zone.onclick = () => input.click();
+  input.onchange = (e) => {
+    for (const file of e.target.files) {
+      if (!file.type.startsWith('image/')) continue;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        photos.push({ data: ev.target.result, base64: ev.target.result.split(',')[1], name: file.name, note: '' });
+        renderPhotos();
+      };
+      reader.readAsDataURL(file);
+    }
+    input.value = '';
+  };
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photo-grid');
+  const count = document.getElementById('photo-count');
+  if (!grid) return;
+
+  grid.innerHTML = photos.map((p, i) => `
+    <div class="photo-card">
+      <img src="${p.data}" alt="Foto ${i+1}">
+      <button class="rm" onclick="removePhoto(${i})">✕</button>
+      <span class="idx">${i+1}</span>
+      <input class="note" placeholder="Notiz..." value="${p.note}" onchange="photos[${i}].note=this.value">
+    </div>
+  `).join('');
+
+  if (count) count.textContent = photos.length > 0 ? photos.length + ' Foto' + (photos.length !== 1 ? 's' : '') : '';
+}
+
+function removePhoto(i) {
+  photos.splice(i, 1);
+  renderPhotos();
+}
+
+// ============================================================
+// CHIP SELECTION
+// ============================================================
+function setupChips(containerId, multi = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.chip').forEach(chip => {
+    chip.onclick = () => {
+      if (!multi) container.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+      chip.classList.toggle('on');
+    };
+  });
+}
+
+function getChipValues(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  return [...container.querySelectorAll('.chip.on')].map(c => c.textContent.trim());
+}
+
+// ============================================================
+// FORM CONTENT RENDERING
+// ============================================================
+function renderFormContent() {
+  const container = document.getElementById(currentForm + '-content');
+  const step = currentStep;
+
+  // Dispatch to form-specific renderer
+  switch(currentForm) {
+    case 'gutachten': renderGutachten(container, step); break;
+    case 'begehung': renderBegehung(container, step); break;
+    case 'bautagebuch': renderBautagebuch(container, step); break;
+    case 'abnahme': renderAbnahme(container, step); break;
+    case 'maengelruege': renderMaengelruege(container, step); break;
+    case 'beweissicherung': renderBeweissicherung(container, step); break;
+    case 'gewaehrleistung': renderGewaehrleistung(container, step); break;
+  }
+}
+
+// ============================================================
+// GUTACHTEN
+// ============================================================
+function renderGutachten(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">Objektdaten</h2>
+      <p class="sec-sub">Basisdaten des zu begutachtenden Objekts</p>
+      <div class="field"><label>Adresse</label><input type="text" id="g-adresse" placeholder="Musterstraße 12, 8010 Graz"></div>
+      <div class="row">
+        <div class="field"><label>Baujahr</label><input type="text" id="g-baujahr" placeholder="z.B. 1985" inputmode="numeric"></div>
+        <div class="field"><label>Gebäudetyp</label>
+          <select id="g-gebaeudetyp" onchange="document.getElementById('g-freitext').style.display=this.value==='Sonstiges'?'':'none'">
+            <option value="">Auswählen</option>
+            <option>Einfamilienhaus</option><option>Mehrfamilienhaus</option><option>Wohnung</option>
+            <option>Reihenhaus</option><option>Doppelhaushälfte</option><option>Gewerbe</option>
+            <option>Industriebau</option><option value="Sonstiges">Sonstiges (Freitext)</option>
+          </select>
+          <input type="text" id="g-freitext" placeholder="Gebäudetyp eingeben..." style="display:none;margin-top:8px">
+        </div>
+      </div>
+      <div class="field"><label>Auftraggeber</label><input type="text" id="g-auftraggeber" placeholder="Name oder Firma"></div>`;
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Art des Gutachtens</h2>
+      <p class="sec-sub">Wählen Sie die passende Gutachtenart</p>
+      <div class="field"><label>Gutachtenart</label>
+        <div class="chips" id="g-art-chips">
+          <div class="chip" style="--c:#E30613">Zustandsbewertung</div>
+          <div class="chip" style="--c:#E30613">Schadensgutachten</div>
+          <div class="chip" style="--c:#E30613">Kaufberatung</div>
+          <div class="chip" style="--c:#E30613">Beweissicherung</div>
+          <div class="chip" style="--c:#E30613">Mängelrüge</div>
+          <div class="chip" style="--c:#E30613">Baubegleitend</div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:16px"><label>Anlass / Aufgabenstellung</label>
+        <textarea id="g-anlass" placeholder="z.B. Feuchtigkeitsschäden im Kellerbereich, Bewertung vor Ankauf..." rows="3"></textarea>
+      </div>`;
+    setupChips('g-art-chips');
+    document.querySelectorAll('#g-art-chips .chip').forEach(ch => {
+      ch.style.cssText += ch.classList.contains('on') ? 'background:#E30613;border-color:#E30613;color:#fff' : '';
+      ch.addEventListener('click', () => {
+        document.querySelectorAll('#g-art-chips .chip').forEach(c2 => { c2.style.background=''; c2.style.borderColor=''; c2.style.color=''; });
+        ch.style.background='#E30613'; ch.style.borderColor='#E30613'; ch.style.color='#fff';
+      });
+    });
+  } else if (step === 2) {
+    c.innerHTML = `
+      <h2 class="sec-title">Fotos</h2>
+      <p class="sec-sub">Baustellenfotos hochladen. Tippen Sie auf ein Foto für eine Notiz.</p>
+      <div class="photo-zone" id="g-upload-zone">
+        <p>Fotos aufnehmen oder auswählen</p>
+        <span>JPG, PNG, HEIC bis je 20 MB</span>
+      </div>
+      <input type="file" id="g-photo-input" accept="image/*" multiple capture="environment">
+      <div class="photo-grid" id="photo-grid"></div>
+      <div class="photo-count" id="photo-count"></div>
+      <div class="field" style="margin-top:16px"><label>Zusätzliche Beobachtungen</label>
+        <textarea id="g-notizen" placeholder="Beobachtungen, die nicht auf den Fotos sichtbar sind..." rows="3"></textarea>
+      </div>`;
+    setupPhotoUpload('g-upload-zone', 'g-photo-input');
+    renderPhotos();
+  } else {
+    c.innerHTML = `
+      <h2 class="sec-title">Zusammenfassung</h2>
+      <p class="sec-sub">Prüfen Sie die Angaben vor dem Absenden</p>
+      <div class="summary-card"><h4>Objektdaten</h4>
+        <div class="summary-row"><span class="lbl">Adresse</span><span class="val">${v('g-adresse')}</span></div>
+        <div class="summary-row"><span class="lbl">Baujahr</span><span class="val">${v('g-baujahr')}</span></div>
+        <div class="summary-row"><span class="lbl">Auftraggeber</span><span class="val">${v('g-auftraggeber')}</span></div>
+      </div>
+      <div class="summary-card"><h4>Gutachten</h4>
+        <div class="summary-row"><span class="lbl">Art</span><span class="val">${getChipValues('g-art-chips').join(', ') || '—'}</span></div>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val">${photos.length}</span></div>
+      </div>`;
+  }
+}
+
+// ============================================================
+// BEGEHUNGSPROTOKOLL
+// ============================================================
+function renderBegehung(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">Projektdaten</h2>
+      <p class="sec-sub">Objekt und Rahmenbedingungen der Begehung</p>
+      <div class="field"><label>Projektname / Bauvorhaben</label><input type="text" id="b-projekt" placeholder="z.B. Neubau EFH Maier, Graz"></div>
+      <div class="field"><label>Objektadresse</label><input type="text" id="b-adresse" placeholder="Straße, PLZ, Ort"></div>
+      <div class="row">
+        <div class="field"><label>Datum der Begehung</label><input type="date" id="b-datum"></div>
+        <div class="field"><label>Uhrzeit</label><input type="time" id="b-uhrzeit"></div>
+      </div>
+      <div class="field"><label>Wetter</label>
+        <div class="chips" id="b-wetter"><div class="chip">Sonnig</div><div class="chip">Bewölkt</div><div class="chip">Regen</div><div class="chip">Schnee</div><div class="chip">Wind</div></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Temperatur (°C)</label><input type="text" id="b-temp" placeholder="z.B. 12" inputmode="numeric"></div>
+        <div class="field"><label>Begehungsnr.</label><input type="text" id="b-nr" placeholder="z.B. BG-001"></div>
+      </div>`;
+    setupChips('b-wetter');
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Teilnehmer</h2>
+      <p class="sec-sub">Wer war bei der Begehung anwesend?</p>
+      <div class="field"><label>Teilnehmer 1</label><input type="text" id="b-tn1" value="Ing. Ferid Mujcinovic, MBA"></div>
+      <div class="field"><label>Funktion</label>
+        <div class="chips" id="b-fn1"><div class="chip on" style="background:var(--blue);border-color:var(--blue);color:#fff">Sachverständiger</div><div class="chip">Bauherr</div><div class="chip">Bauleitung</div><div class="chip">Ausführender</div></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div class="field"><label>Teilnehmer 2</label><input type="text" id="b-tn2" placeholder="Name eingeben"></div>
+      <div class="field"><label>Funktion</label>
+        <div class="chips" id="b-fn2"><div class="chip">Sachverständiger</div><div class="chip">Bauherr</div><div class="chip">Bauleitung</div><div class="chip">Ausführender</div></div>
+      </div>
+      <div class="add-btn">+ Weiteren Teilnehmer hinzufügen</div>`;
+    setupChips('b-fn1'); setupChips('b-fn2');
+  } else if (step === 2) {
+    c.innerHTML = `
+      <h2 class="sec-title">Beobachtungen + Fotos</h2>
+      <p class="sec-sub">Dokumentation pro Bereich. Fotos und Notizen.</p>
+      <div class="field"><label>Bereich / Bauteil</label>
+        <div class="chips" id="b-bereich"><div class="chip">Außenbereich</div><div class="chip">Keller</div><div class="chip">Erdgeschoß</div><div class="chip">Obergeschoß</div><div class="chip">Dach</div><div class="chip">Haustechnik</div></div>
+      </div>
+      <div class="field"><label>Beobachtung / Feststellung</label><textarea id="b-beob" placeholder="Was wurde festgestellt?" rows="3"></textarea></div>
+      <div class="field"><label>Bewertung</label>
+        <div class="chips" id="b-bewertung"><div class="chip" style="border-color:var(--green);color:var(--green)">In Ordnung</div><div class="chip" style="border-color:var(--amber);color:var(--amber)">Mangel</div><div class="chip" style="border-color:var(--danger);color:var(--danger)">Gefahr</div></div>
+      </div>
+      <div class="field"><label>Fotos</label>
+        <div class="photo-zone" id="b-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
+        <input type="file" id="b-photo-input" accept="image/*" multiple capture="environment">
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="photo-count" id="photo-count"></div>
+      </div>
+      <div class="add-btn">+ Weitere Beobachtung hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div class="field"><label>Maßnahmen / Aufgaben</label><textarea id="b-massnahmen" placeholder="Was ist zu tun?" rows="2"></textarea></div>
+      <div class="row">
+        <div class="field"><label>Verantwortlich</label><input type="text" id="b-verantwortlich" placeholder="Name / Firma"></div>
+        <div class="field"><label>Frist</label><input type="date" id="b-frist"></div>
+      </div>`;
+    setupChips('b-bereich', true); setupChips('b-bewertung');
+    setupPhotoUpload('b-upload-zone', 'b-photo-input');
+    renderPhotos();
+  } else {
+    c.innerHTML = `
+      <h2 class="sec-title">Zusammenfassung</h2>
+      <p class="sec-sub">Prüfen Sie die Angaben vor dem Erstellen.</p>
+      <div class="summary-card"><h4>Projekt</h4>
+        <div class="summary-row"><span class="lbl">Objekt</span><span class="val">${v('b-adresse')}</span></div>
+        <div class="summary-row"><span class="lbl">Datum</span><span class="val">${v('b-datum')}</span></div>
+        <div class="summary-row"><span class="lbl">Wetter</span><span class="val">${getChipValues('b-wetter').join(', ')}, ${v('b-temp')}°C</span></div>
+      </div>
+      <div class="summary-card"><h4>Dokumentation</h4>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val">${photos.length}</span></div>
+        <div class="summary-row"><span class="lbl">Bereiche</span><span class="val">${getChipValues('b-bereich').join(', ')}</span></div>
+      </div>`;
+  }
+}
+
+// ============================================================
+// BAUTAGEBUCH
+// ============================================================
+function renderBautagebuch(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">Projekt + Wetter</h2>
+      <p class="sec-sub">Tagesbericht für das Bauvorhaben</p>
+      <div class="field"><label>Projektname / Bauvorhaben</label><input type="text" id="bt-projekt" placeholder="z.B. Neubau EFH Maier"></div>
+      <div class="field"><label>Objektadresse</label><input type="text" id="bt-adresse" placeholder="Straße, PLZ, Ort"></div>
+      <div class="row">
+        <div class="field"><label>Datum</label><input type="date" id="bt-datum"></div>
+        <div class="field"><label>Tagesbericht Nr.</label><input type="text" id="bt-nr" placeholder="z.B. TB-042"></div>
+      </div>
+      <div class="field"><label>Witterung</label>
+        <div class="chips" id="bt-wetter"><div class="chip">Sonnig</div><div class="chip">Bewölkt</div><div class="chip">Regen</div><div class="chip">Schnee</div><div class="chip">Frost</div></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Temp. morgens</label><input type="text" id="bt-temp1" placeholder="°C" inputmode="numeric"></div>
+        <div class="field"><label>Temp. mittags</label><input type="text" id="bt-temp2" placeholder="°C" inputmode="numeric"></div>
+        <div class="field"><label>Temp. abends</label><input type="text" id="bt-temp3" placeholder="°C" inputmode="numeric"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Arbeitszeit von</label><input type="time" id="bt-von"></div>
+        <div class="field"><label>Arbeitszeit bis</label><input type="time" id="bt-bis"></div>
+      </div>`;
+    setupChips('bt-wetter');
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Arbeitskräfte</h2>
+      <p class="sec-sub">Gewerke und Anzahl der Personen auf der Baustelle</p>
+      <div id="bt-crews"></div>
+      <div class="add-btn" onclick="addCrew()">+ Weiteres Gewerk hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div style="display:flex;justify-content:space-between;padding:4px 0">
+        <span style="font-size:14px;color:var(--muted)">Gesamt Personen</span>
+        <span id="bt-total" style="font-size:16px;font-weight:600;color:var(--amber)">0</span>
+      </div>`;
+    initCrews();
+  } else if (step === 2) {
+    c.innerHTML = `
+      <h2 class="sec-title">Leistungen + Ereignisse</h2>
+      <p class="sec-sub">Ausgeführte Arbeiten, Lieferungen, Besonderheiten</p>
+      <div class="field"><label>Ausgeführte Arbeiten</label><textarea id="bt-arbeiten" placeholder="Welche Arbeiten wurden heute durchgeführt?" rows="4"></textarea></div>
+      <div class="field"><label>Materiallieferungen</label><textarea id="bt-material" placeholder="Was wurde geliefert? (optional)" rows="2"></textarea></div>
+      <div class="field"><label>Geräte / Maschinen</label><input type="text" id="bt-geraete" placeholder="Welche Geräte waren im Einsatz? (optional)"></div>
+      <div class="field"><label>Besondere Vorkommnisse</label>
+        <div class="chips" id="bt-vorkommnisse"><div class="chip">Keine</div><div class="chip">Verzögerung</div><div class="chip">Unfall</div><div class="chip">Baustopp</div></div>
+        <textarea id="bt-vorkommnisse-text" placeholder="Beschreibung (optional)" rows="2" style="margin-top:8px"></textarea>
+      </div>
+      <div class="field"><label>Fotos</label>
+        <div class="photo-zone" id="bt-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
+        <input type="file" id="bt-photo-input" accept="image/*" multiple capture="environment">
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="photo-count" id="photo-count"></div>
+      </div>
+      <div class="field"><label>Anmerkungen</label><textarea id="bt-anmerkungen" placeholder="Sonstige Notizen (optional)" rows="2"></textarea></div>`;
+    setupChips('bt-vorkommnisse');
+    setupPhotoUpload('bt-upload-zone', 'bt-photo-input');
+    renderPhotos();
+  } else {
+    c.innerHTML = `
+      <h2 class="sec-title">Zusammenfassung</h2>
+      <p class="sec-sub">Prüfen und Tagesbericht erstellen</p>
+      <div class="summary-card"><h4>Tagesbericht</h4>
+        <div class="summary-row"><span class="lbl">Datum</span><span class="val">${v('bt-datum')}</span></div>
+        <div class="summary-row"><span class="lbl">Wetter</span><span class="val">${getChipValues('bt-wetter').join(', ')}</span></div>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val">${photos.length}</span></div>
+      </div>`;
+  }
+}
+
+let crews = [];
+function initCrews() {
+  if (crews.length === 0) crews = [
+    {name:'Rohbau / Maurer',n:0},{name:'Zimmerei',n:0},{name:'Elektro',n:0},
+    {name:'Sanitär / Heizung',n:0},{name:'Estrich / Boden',n:0},
+    {name:'Trockenbau',n:0},{name:'Dachdecker / Spengler',n:0}
+  ];
+  renderCrews();
+}
+function renderCrews() {
+  const el = document.getElementById('bt-crews');
+  if (!el) return;
+  el.innerHTML = crews.map((cr,i) => `
+    <div class="crew-row"><span>${cr.name}</span>
+      <div class="crew-cnt">
+        <div class="cnt-btn" onclick="changeCrew(${i},-1)">−</div>
+        <span class="n" style="color:var(--amber)">${cr.n}</span>
+        <div class="cnt-btn" onclick="changeCrew(${i},1)">+</div>
+      </div>
+    </div>`).join('');
+  const total = crews.reduce((s,c) => s+c.n, 0);
+  const te = document.getElementById('bt-total');
+  if (te) te.textContent = total;
+}
+function changeCrew(i, d) { crews[i].n = Math.max(0, crews[i].n + d); renderCrews(); }
+function addCrew() { const name = prompt('Gewerk-Name:'); if (name) { crews.push({name, n:0}); renderCrews(); } }
+
+// ============================================================
+// ABNAHMEPROTOKOLL
+// ============================================================
+function renderAbnahme(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">Abnahmedaten</h2>
+      <p class="sec-sub">Objekt, Beteiligte und Art der Abnahme</p>
+      <div class="field"><label>Projektname / Bauvorhaben</label><input type="text" id="a-projekt" placeholder="z.B. Neubau EFH Maier"></div>
+      <div class="field"><label>Objektadresse</label><input type="text" id="a-adresse" placeholder="Straße, PLZ, Ort"></div>
+      <div class="row">
+        <div class="field"><label>Datum</label><input type="date" id="a-datum"></div>
+        <div class="field"><label>Uhrzeit</label><input type="time" id="a-uhrzeit"></div>
+      </div>
+      <div class="field"><label>Art der Abnahme</label>
+        <div class="chips" id="a-art"><div class="chip">Schlussabnahme</div><div class="chip">Teilabnahme</div><div class="chip">Behördlich</div><div class="chip">Sonstiges</div></div>
+      </div>
+      <div class="field"><label>Auftragnehmer / Firma</label><input type="text" id="a-firma" placeholder="Firma, Ansprechpartner"></div>
+      <div class="field"><label>Gewerk / Leistung</label><input type="text" id="a-gewerk" placeholder="z.B. Rohbauarbeiten"></div>`;
+    setupChips('a-art');
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Prüfpunkte</h2>
+      <p class="sec-sub">Tippen Sie auf einen Punkt, um den Status zu ändern.</p>
+      <div id="a-checks"></div>
+      <div class="add-btn" onclick="addCheck()">+ Eigenen Prüfpunkt hinzufügen</div>`;
+    initChecks();
+  } else if (step === 2) {
+    c.innerHTML = `
+      <h2 class="sec-title">Mängel + Vorbehalte</h2>
+      <p class="sec-sub">Festgestellte Mängel dokumentieren</p>
+      <div class="field"><label>Mangel 1: Beschreibung</label><textarea id="a-mangel1" placeholder="Beschreibung des Mangels" rows="3"></textarea></div>
+      <div class="field"><label>Fotos</label>
+        <div class="photo-zone" id="a-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
+        <input type="file" id="a-photo-input" accept="image/*" multiple capture="environment">
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="photo-count" id="photo-count"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Frist zur Behebung</label><input type="date" id="a-frist"></div>
+        <div class="field"><label>Verantwortlich</label><input type="text" id="a-verantwortlich" placeholder="Firma / Name"></div>
+      </div>
+      <div class="add-btn">+ Weiteren Mangel hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div class="field"><label>Allgemeine Vorbehalte</label><textarea id="a-vorbehalte" placeholder="Sonstige Vorbehalte oder Vereinbarungen (optional)" rows="2"></textarea></div>`;
+    setupPhotoUpload('a-upload-zone', 'a-photo-input');
+    renderPhotos();
+  } else {
+    c.innerHTML = `
+      <h2 class="sec-title">Abnahmeentscheidung</h2>
+      <p class="sec-sub">Ergebnis der Abnahme festlegen</p>
+      <div class="decision sel" onclick="selectDecision(this)"><div class="dot"></div><div><div class="dec-t">Abnahme erteilt</div><div class="dec-s">Leistung vollständig und mängelfrei</div></div></div>
+      <div class="decision" onclick="selectDecision(this)"><div class="dot"></div><div><div class="dec-t">Abnahme unter Vorbehalt</div><div class="dec-s">Leistung mit Mängeln, Frist zur Behebung</div></div></div>
+      <div class="decision" onclick="selectDecision(this)"><div class="dot"></div><div><div class="dec-t">Abnahme verweigert</div><div class="dec-s">Wesentliche Mängel, Nachbesserung erforderlich</div></div></div>`;
+  }
+}
+
+let checks = [];
+function initChecks() {
+  if (checks.length === 0) checks = [
+    {text:'Vollständigkeit der Leistung',st:'open'},{text:'Einhaltung der Pläne',st:'open'},
+    {text:'Oberflächenqualität',st:'open'},{text:'Maßhaltigkeit',st:'open'},
+    {text:'Funktion technischer Anlagen',st:'open'},{text:'Sauberkeit / Ordnung',st:'open'},
+    {text:'Dokumentation / Unterlagen',st:'open'}
+  ];
+  renderChecks();
+}
+function renderChecks() {
+  const el = document.getElementById('a-checks');
+  if (!el) return;
+  el.innerHTML = checks.map((ch,i) => {
+    const cls = ch.st === 'ok' ? 'ok' : ch.st === 'fail' ? 'fail' : '';
+    const badge = ch.st === 'ok' ? '<span class="check-badge cb-ok">OK</span>' : ch.st === 'fail' ? '<span class="check-badge cb-fail">Mangel</span>' : '<span class="check-badge cb-open">Offen</span>';
+    return `<div class="check-item ${cls}" onclick="cycleCheck(${i})"><div class="check-box"></div><span class="check-text">${ch.text}</span>${badge}</div>`;
+  }).join('');
+}
+function cycleCheck(i) { const states = ['open','ok','fail']; const idx = states.indexOf(checks[i].st); checks[i].st = states[(idx+1)%3]; renderChecks(); }
+function addCheck() { const t = prompt('Prüfpunkt:'); if (t) { checks.push({text:t,st:'open'}); renderChecks(); } }
+function selectDecision(el) { document.querySelectorAll('.decision').forEach(d => d.classList.remove('sel')); el.classList.add('sel'); }
+
+// ============================================================
+// MÄNGELRÜGE
+// ============================================================
+function renderMaengelruege(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">Empfänger + Bezug</h2>
+      <p class="sec-sub">An wen richtet sich die Mängelrüge?</p>
+      <div class="hint-box" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);color:#a78bfa">Die Mängelrüge wird als formelles Schreiben auf Ihrem Briefpapier erstellt.</div>
+      <div class="field"><label>Empfänger (Firma)</label><input type="text" id="m-firma" placeholder="Firmenname des Auftragnehmers"></div>
+      <div class="field"><label>Ansprechpartner</label><input type="text" id="m-ansprech" placeholder="z.B. Herr Max Mustermann"></div>
+      <div class="field"><label>Adresse</label><input type="text" id="m-adresse" placeholder="Straße, PLZ, Ort"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div class="field"><label>Bauvorhaben / Projekt</label><input type="text" id="m-projekt" placeholder="z.B. Neubau EFH Maier"></div>
+      <div class="field"><label>Objektadresse</label><input type="text" id="m-objekt" placeholder="Straße, PLZ, Ort"></div>
+      <div class="field"><label>Vertragsnummer</label><input type="text" id="m-vertrag" placeholder="Referenznummer (optional)"></div>
+      <div class="field"><label>Gewerk</label><input type="text" id="m-gewerk" placeholder="z.B. Putzarbeiten, Abdichtung"></div>`;
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Mängel dokumentieren</h2>
+      <p class="sec-sub">Jeden Mangel einzeln beschreiben und mit Fotos belegen.</p>
+      <div class="field"><label>Mangel 1: Beschreibung</label><textarea id="m-mangel1" placeholder="Detaillierte Beschreibung des Mangels, Lage, Ausmaß" rows="3"></textarea></div>
+      <div class="field"><label>Bezug zur Leistung / Norm</label><input type="text" id="m-norm1" placeholder="z.B. Abweichung von ÖNORM B 2210, Abschnitt 5.3"></div>
+      <div class="field"><label>Fotos</label>
+        <div class="photo-zone" id="m-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
+        <input type="file" id="m-photo-input" accept="image/*" multiple capture="environment">
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="photo-count" id="photo-count"></div>
+      </div>
+      <div class="field"><label>Festgestellt am</label><input type="date" id="m-festgestellt"></div>
+      <div class="add-btn">+ Weiteren Mangel hinzufügen</div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div class="field"><label>Frist zur Mängelbehebung</label>
+        <div class="chips" id="m-frist"><div class="chip">14 Tage</div><div class="chip">21 Tage</div><div class="chip">30 Tage</div><div class="chip">Individuell</div></div>
+      </div>
+      <div class="field"><label>Bei Nicht-Behebung</label>
+        <div class="chips" id="m-konsequenz"><div class="chip">Ersatzvornahme</div><div class="chip">Preisminderung</div><div class="chip">Rücktritt</div></div>
+      </div>`;
+    setupChips('m-frist'); setupChips('m-konsequenz');
+    setupPhotoUpload('m-upload-zone', 'm-photo-input');
+    renderPhotos();
+  } else {
+    c.innerHTML = `
+      <h2 class="sec-title">Zusammenfassung</h2>
+      <p class="sec-sub">Prüfen Sie die Angaben. Das Schreiben wird als formeller Brief erstellt.</p>
+      <div class="summary-card"><h4>Empfänger</h4>
+        <div class="summary-row"><span class="lbl">Firma</span><span class="val">${v('m-firma')}</span></div>
+        <div class="summary-row"><span class="lbl">Gewerk</span><span class="val">${v('m-gewerk')}</span></div>
+      </div>
+      <div class="summary-card"><h4>Mängel + Fristen</h4>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val">${photos.length}</span></div>
+        <div class="summary-row"><span class="lbl">Frist</span><span class="val" style="color:var(--amber)">${getChipValues('m-frist').join(', ')}</span></div>
+        <div class="summary-row"><span class="lbl">Konsequenz</span><span class="val">${getChipValues('m-konsequenz').join(', ')}</span></div>
+      </div>
+      <div class="hint-box" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);color:#a78bfa">Die KI erstellt ein formelles Schreiben mit korrekter rechtlicher Formulierung. Bitte vor Versand prüfen.</div>`;
+  }
+}
+
+// ============================================================
+// BEWEISSICHERUNG
+// ============================================================
+function renderBeweissicherung(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">Anlass + Objekt</h2>
+      <p class="sec-sub">Warum wird die Beweissicherung durchgeführt?</p>
+      <div class="hint-box" style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.2);color:#5eead4">Die Beweissicherung dokumentiert den Ist-Zustand ohne Bewertung. Rein beschreibend und fotografisch.</div>
+      <div class="field"><label>Anlass</label>
+        <div class="chips" id="bs-anlass"><div class="chip">Vor Baubeginn Nachbar</div><div class="chip">Vor Umbau / Sanierung</div><div class="chip">Streitfall</div><div class="chip">Versicherung</div><div class="chip">Sonstiges</div></div>
+      </div>
+      <div class="field"><label>Beschreibung des Anlasses</label><textarea id="bs-beschreibung" placeholder="z.B. Dokumentation des Bestandsgebäudes vor Abriss des Nachbargebäudes" rows="2"></textarea></div>
+      <div class="field"><label>Objektadresse</label><input type="text" id="bs-adresse" placeholder="Straße, PLZ, Ort"></div>
+      <div class="field"><label>Eigentümer / Auftraggeber</label><input type="text" id="bs-eigentuemer" placeholder="Name"></div>
+      <div class="row">
+        <div class="field"><label>Datum</label><input type="date" id="bs-datum"></div>
+        <div class="field"><label>Uhrzeit</label><input type="time" id="bs-uhrzeit"></div>
+      </div>
+      <div class="field"><label>Wetter</label>
+        <div class="chips" id="bs-wetter"><div class="chip">Sonnig</div><div class="chip">Bewölkt</div><div class="chip">Regen</div><div class="chip">Trocken</div></div>
+      </div>`;
+    setupChips('bs-anlass'); setupChips('bs-wetter');
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Bereiche erfassen</h2>
+      <p class="sec-sub">Welche Bereiche / Räume werden dokumentiert?</p>
+      <div class="field"><label>Bereiche auswählen</label>
+        <div class="chips" id="bs-bereiche">
+          <div class="chip">Fassade Nord</div><div class="chip">Fassade Ost</div><div class="chip">Fassade Süd</div><div class="chip">Fassade West</div>
+          <div class="chip">Keller</div><div class="chip">Erdgeschoß</div><div class="chip">Obergeschoß</div><div class="chip">Dachgeschoß</div>
+          <div class="chip">Außenanlagen</div><div class="chip">Garage</div>
+        </div>
+      </div>
+      <div class="add-btn">+ Eigenen Bereich hinzufügen</div>`;
+    setupChips('bs-bereiche', true);
+  } else if (step === 2) {
+    c.innerHTML = `
+      <h2 class="sec-title">Zustand dokumentieren</h2>
+      <p class="sec-sub">Pro Bereich: Zustand beschreiben und fotografieren.</p>
+      <div class="field"><label>Zustandsbeschreibung</label><textarea id="bs-zustand" placeholder="Material, Oberfläche, vorhandene Schäden, Risse, Verfärbungen..." rows="4"></textarea></div>
+      <div class="field"><label>Vorhandene Schäden / Auffälligkeiten</label>
+        <div class="chips" id="bs-schaeden"><div class="chip">Keine</div><div class="chip">Risse</div><div class="chip">Feuchtigkeit</div><div class="chip">Abplatzungen</div><div class="chip">Verfärbungen</div><div class="chip">Sonstiges</div></div>
+      </div>
+      <div class="field"><label>Fotos (möglichst umfangreich)</label>
+        <div class="photo-zone" id="bs-upload-zone"><p>Fotos aufnehmen oder auswählen</p><span>JPG, PNG, HEIC</span></div>
+        <input type="file" id="bs-photo-input" accept="image/*" multiple capture="environment">
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="photo-count" id="photo-count"></div>
+      </div>
+      <div class="field"><label>Ergänzende Notizen</label><textarea id="bs-notizen" placeholder="z.B. Riss ca. 0,3 mm, Verläuft diagonal vom Fenster OG" rows="2"></textarea></div>`;
+    setupChips('bs-schaeden', true);
+    setupPhotoUpload('bs-upload-zone', 'bs-photo-input');
+    renderPhotos();
+  } else {
+    c.innerHTML = `
+      <h2 class="sec-title">Zusammenfassung</h2>
+      <p class="sec-sub">Übersicht aller dokumentierten Bereiche</p>
+      <div class="summary-card"><h4>Objekt</h4>
+        <div class="summary-row"><span class="lbl">Adresse</span><span class="val">${v('bs-adresse')}</span></div>
+        <div class="summary-row"><span class="lbl">Anlass</span><span class="val">${getChipValues('bs-anlass').join(', ')}</span></div>
+        <div class="summary-row"><span class="lbl">Datum</span><span class="val">${v('bs-datum')}</span></div>
+      </div>
+      <div class="summary-card"><h4>Dokumentation</h4>
+        <div class="summary-row"><span class="lbl">Bereiche</span><span class="val">${getChipValues('bs-bereiche').join(', ')}</span></div>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val" style="color:var(--teal)">${photos.length}</span></div>
+      </div>`;
+  }
+}
+
+// ============================================================
+// GEWÄHRLEISTUNGSABNAHME
+// ============================================================
+function renderGewaehrleistung(c, step) {
+  if (step === 0) {
+    c.innerHTML = `
+      <h2 class="sec-title">GW-Abnahmedaten</h2>
+      <p class="sec-sub">Daten zur Gewährleistungsabnahme</p>
+      <div class="field"><label>Projektname</label><input type="text" id="gw-projektname" placeholder="Bauvorhaben XY"></div>
+      <div class="field"><label>Objektadresse</label><input type="text" id="gw-adresse" placeholder="Musterstraße 12, 8010 Graz"></div>
+      <div class="field"><label>Auftraggeber</label><input type="text" id="gw-auftraggeber" placeholder="Name oder Firma"></div>
+      <div class="row">
+        <div class="field"><label>Firma (AN)</label><input type="text" id="gw-firma-an" placeholder="Ausführende Firma"></div>
+        <div class="field"><label>Gewerk</label><input type="text" id="gw-gewerk" placeholder="z.B. Fassade"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>AP-Nummer</label><input type="text" id="gw-ap-nummer" placeholder="AP-2026-0001"></div>
+        <div class="field"><label>AP-Datum</label><input type="date" id="gw-ap-datum"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>GW-Beginn</label><input type="date" id="gw-beginn"></div>
+        <div class="field"><label>GW-Ende</label><input type="date" id="gw-ende"></div>
+      </div>
+      <div class="field"><label>Begehungsdatum</label><input type="date" id="gw-begehungsdatum"></div>`;
+  } else if (step === 1) {
+    c.innerHTML = `
+      <h2 class="sec-title">Prüfung + Fotos</h2>
+      <p class="sec-sub">Dokumentieren Sie den aktuellen Zustand</p>
+      <div class="field"><label>Übersichtsfoto</label>
+        <div class="photo-zone" onclick="document.getElementById('gw-uebersicht-input').click()">
+          <p>Übersichtsfoto aufnehmen</p><span>Tippen zum Fotografieren</span>
+        </div>
+        <input type="file" id="gw-uebersicht-input" accept="image/*" capture="environment" onchange="handleOverviewPhoto(this)">
+        <div id="gw-uebersicht-preview"></div>
+      </div>
+      <div class="field"><label>Fotos der Prüfung</label>
+        <div class="photo-zone" onclick="document.getElementById('gw-photo-input').click()">
+          <p>Fotos aufnehmen</p><span>Tippen oder Dateien wählen</span>
+        </div>
+        <input type="file" id="gw-photo-input" accept="image/*" capture="environment" multiple onchange="handlePhotos(this)">
+        <div class="photo-grid" id="gw-photo-grid"></div>
+        <div class="photo-count">${photos.length} Foto(s)</div>
+      </div>
+      <div class="field"><label>Anmerkungen zur Prüfung</label>
+        <textarea id="gw-anmerkungen" placeholder="Allgemeine Beobachtungen zum Zustand..." rows="3"></textarea>
+      </div>`;
+  } else if (step === 2) {
+    c.innerHTML = `
+      <h2 class="sec-title">Mängel</h2>
+      <p class="sec-sub">Bestehende oder neue Mängel erfassen</p>
+      <div class="field"><label>Status bestehender Mängel</label>
+        <textarea id="gw-maengel-status" placeholder="Wurden Mängel aus der Erstabnahme behoben? Welche sind offen?" rows="3"></textarea>
+      </div>
+      <div class="field"><label>Neue Mängel</label>
+        <textarea id="gw-neue-maengel" placeholder="Neu festgestellte Mängel innerhalb der Gewährleistungsfrist..." rows="3"></textarea>
+      </div>`;
+  } else if (step === 3) {
+    c.innerHTML = `
+      <h2 class="sec-title">Zusammenfassung</h2>
+      <p class="sec-sub">Bitte prüfen Sie Ihre Angaben</p>
+      <div class="summary-card">
+        <h4>GW-Abnahme</h4>
+        <div class="summary-row"><span class="lbl">Projekt</span><span class="val">${v('gw-projektname')}</span></div>
+        <div class="summary-row"><span class="lbl">Adresse</span><span class="val">${v('gw-adresse')}</span></div>
+        <div class="summary-row"><span class="lbl">Firma (AN)</span><span class="val">${v('gw-firma-an')}</span></div>
+        <div class="summary-row"><span class="lbl">Gewerk</span><span class="val">${v('gw-gewerk')}</span></div>
+        <div class="summary-row"><span class="lbl">GW-Zeitraum</span><span class="val">${v('gw-beginn')} bis ${v('gw-ende')}</span></div>
+        <div class="summary-row"><span class="lbl">Fotos</span><span class="val" style="color:var(--amber)">${photos.length}</span></div>
+      </div>`;
+  }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? (el.value || '—') : '—';
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+async function submitForm() {
+  const loading = document.getElementById('loading');
+  const loadingStep = document.getElementById('loading-step');
+  const loadingText = document.getElementById('loading-text');
+  loading.classList.add('active');
+  loadingText.textContent = FORMS[currentForm].title + ' wird erstellt...';
+
+  const steps = ['Fotos werden analysiert...','Normen werden durchsucht...','Text wird generiert...','Word-Datei wird erstellt...'];
+  let si = 0;
+  const iv = setInterval(() => { si = Math.min(si+1, steps.length-1); loadingStep.textContent = steps[si]; }, 3000);
+
+  // Mapping von internem Formnamen auf Gutachtentyp-Kürzel
+  const typKuerzel = {
+    gutachten: 'GA', begehung: 'BG', bautagebuch: 'BT',
+    abnahme: 'AP', maengelruege: 'MR', beweissicherung: 'BS', gewaehrleistung: 'GW'
+  };
+
+  const payload = {
+    typ: currentForm,
+    gutachtentyp: typKuerzel[currentForm] || 'GA',
+    titel: FORMS[currentForm].title,
+    fotos: photos.map(p => ({base64: p.base64, notiz: p.note, dateiname: p.name}))
+  };
+
+  // Collect all form inputs
+  document.querySelectorAll('#page-' + currentForm + ' input, #page-' + currentForm + ' textarea, #page-' + currentForm + ' select').forEach(el => {
+    if (el.id && el.value) payload[el.id] = el.value;
+  });
+
+  try {
+    const res = await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const result = await res.json();
+    clearInterval(iv);
+    loading.classList.remove('active');
+    alert('Dokument wird erstellt und im Ausgabeordner abgelegt.');
+    goHome();
+  } catch(e) {
+    clearInterval(iv);
+    loading.classList.remove('active');
+    alert('Verbindungsfehler: ' + e.message + '\n\nPrüfen Sie die Webhook-URL.');
+  }
+}
+
+function goHome() {
+  currentForm = null;
+  currentStep = 0;
+  photos = [];
+  crews = [];
+  checks = [];
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  document.getElementById('back-btn').style.display = 'none';
+  document.getElementById('header-badge').textContent = 'v2.0';
+  document.getElementById('header-badge').style.background = 'var(--red)';
+  document.getElementById('logo-hex').style.background = 'var(--red)';
+  document.getElementById('bottom').style.display = 'none';
+}
+</script>
+</body>
+</html>
